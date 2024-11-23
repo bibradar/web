@@ -11,7 +11,7 @@
 	let height = 200;
 
 	function formatMobile(tick: number | string) {
-		return `'${tick.toString().slice(-2)}`;
+		return `${tick.toString().slice(-2)}`;
 	}
 
 	$: xScale = scaleLinear()
@@ -61,8 +61,8 @@
 						y="-15"
 						fill="#888888"
 						text-anchor="middle"
-						><tspan x={barWidth / 2} dy="0.71em"
-							>{width > 380 ? point.name : formatMobile(point.name)}</tspan
+						><tspan x={barWidth / 2 - barWidth / 8} dy="0.71em"
+							>{point.name}</tspan
 						></text
 					>
 				</g>

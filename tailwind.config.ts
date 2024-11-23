@@ -10,6 +10,7 @@ const config: Config = {
 			center: true,
 			padding: '2rem',
 			screens: {
+				'lg': '1024px',
 				'2xl': '1400px'
 			}
 		},
@@ -55,7 +56,8 @@ const config: Config = {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				sans: [...fontFamily.sans],
+				serif: ['Merriweather', ...fontFamily.serif]
 			}
 		}
 	}

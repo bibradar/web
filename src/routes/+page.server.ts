@@ -17,7 +17,7 @@ export const load: ServerLoad = async ({ params, fetch }) => {
         libs.forEach((lib) => {
         lib.occupations = new Promise((resolve, reject) => {
             setTimeout(() => {
-                resolve([0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 0.6, 0.3, 0.1, 0.0])
+                resolve([0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 0.2, 0.4, 0.8, 1.0, 0.6, 0.3, 0.1, 0.0])
             }, 1000)
         });
     });
