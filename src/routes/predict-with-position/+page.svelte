@@ -5,7 +5,57 @@
 
 	const { data } = $props();
 
-	let distances = $state(new Promise(() => {}));
+	let orderedLibs = $state(data.libs);
+
+	let mapContainer: HTMLElement | undefined = $state();
+
+	const initMap = async () => {
+		if (!mapContainer) return;
+
+		const { Geocoder } = (await google.maps.importLibrary(
+			'geocoding'
+		)) as google.maps.GeocodingLibrary;
+
+		let validationPromise = new Promise<google.maps.LatLng>((resolve, reject) => {
+			new Geocoder().geocode(
+				{
+					address: orderedLibs[0].location ?? undefined
+				},
+				(response, status) => {
+					if (!response || status !== 'OK') {
+						console.error('invalid lib location');
+						reject();
+						return;
+					}
+
+					resolve(response[0].geometry.location);
+				}
+			);
+		});
+
+		let libCoordinates;
+		try {
+			libCoordinates = await validationPromise;
+		} catch (error) {
+			console.error('invalid lib location');
+			goto('/');
+			return;
+		}
+
+		const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
+		let map = new Map(mapContainer, {
+			center: libCoordinates,
+			zoom: 15
+		});
+
+		const { Marker } = (await google.maps.importLibrary('marker')) as google.maps.MarkerLibrary;
+
+		new Marker({
+			position: libCoordinates,
+			map: map,
+			title: 'Hello World!'
+		});
+	};
 
 	const loadDistances = async () => {
 		const { Geocoder } = (await google.maps.importLibrary(
@@ -74,18 +124,46 @@
 				arrival_time: distance.distance.arrival_time?.value.getTime()
 			};
 		});
-
 		console.log(request);
+
+		let resp = fetch('https://ml-backend-1060597826530.europe-west3.run.app/predict', {
+			method: 'POST',
+			body: JSON.stringify(request)
+		}).then((response) => response.json());
+
+		console.log(resp);
 	};
 
 	onMount(loadDistances);
+
+	$effect(() => {
+		if (!mapContainer) return;
+		initMap();
+	});
 </script>
 
-{#await distances}
+{#await orderedLibs}
 	Please wait...
-{:then distances}
-	{#each distances as distance}
-		<p>{distance.end_address}: {distance.arrival_time.text}</p>
+{:then libs}
+	<div class="container">
+		<div class="flex flex-col flex-wrap max-md:h-screen">
+			<div>
+				Your best choice is:
+				<div
+					class="flex w-full flex-row flex-wrap items-center justify-center gap-1 py-10 text-8xl font-bold"
+				>
+					<div>
+						{libs[0].bib}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div bind:this={mapContainer} class="h-96 w-full"></div>
+	</div>
+
+	{#each libs.slice(1, libs.length) as lib}
+		<p>{lib.bib}</p>
 	{/each}
 {:catch error}
 	<p>{error.message}</p>
