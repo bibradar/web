@@ -1,13 +1,5 @@
+import type { Lib } from "$lib/types";
 import type { ServerLoad } from "@sveltejs/kit";
-
-interface Lib {
-    id: number,
-    name: string,
-    bib: string,
-    uni: string,
-    location: string,
-    occupations: Promise<number[]>
-}
 
 export const load: ServerLoad = async ({ params, fetch }) => {
     let libs: Lib[] = await fetch("https://ml-backend-1060597826530.europe-west3.run.app/libraries").then(async (response) => {

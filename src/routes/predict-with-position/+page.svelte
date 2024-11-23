@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import type { Lib } from '$lib/types.js';
 	import { onMount } from 'svelte';
 
 	const { data } = $props();
@@ -40,13 +41,13 @@
 
 		var directionsService = new google.maps.DirectionsService();
 		let promises = [];
-		for (let i = 0; i < 10; i++) {
+		for (let lib of data.libs) {
 			promises.push(
-				new Promise<google.maps.DirectionsLeg>((resolve, reject) => {
+				new Promise<{ distance: google.maps.DirectionsLeg; lib: Lib }>((resolve, reject) => {
 					directionsService.route(
 						{
 							origin: userCoordinates,
-							destination: 'Phillologicum, Ludwigstraße 25, 80539 München',
+							destination: lib.location,
 							travelMode: google.maps.TravelMode.TRANSIT
 						},
 						(response, status) => {
@@ -55,14 +56,26 @@
 								reject();
 								return;
 							}
-							resolve(response.routes[0].legs[0]);
+							resolve({
+								lib,
+								distance: response.routes[0].legs[0]
+							});
 						}
 					);
 				})
 			);
 		}
 
-		distances = Promise.all(promises);
+		let distances: { distance: google.maps.DirectionsLeg; lib: Lib }[] =
+			await Promise.all(promises);
+		let request = distances.map((distance) => {
+			return {
+				library_id: distance.lib.id,
+				arrival_time: distance.distance.arrival_time?.value.getTime()
+			};
+		});
+
+		console.log(request);
 	};
 
 	onMount(loadDistances);
