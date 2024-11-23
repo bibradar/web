@@ -107,7 +107,7 @@
 					{#await lib.occupations}
 						loading
 					{:then occupation}
-						<Bar data={occupation.map((o, i) => ({ name: (((i+8) % 3 === 0) ? i+8 : '' ), total: o * 100 }))} />
+						<Bar data={occupation.map((o, i) => ({ name: (((i+8) % 3 === 0) ? i+8 : '' ), avg: o * 100, actual : Math.min(o * 100 - (5 - Math.random() * 20), 99)}))} cutoff={13} />
 					{/await}
 				</Card.Content>
 			</Card.Root>
