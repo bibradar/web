@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { scaleLinear } from 'd3-scale';
 
-	export let data: { name: string; avg: number, actual: number }[] = [];
+	export let data: { name: string; avg: number; actual: number }[] = [];
 	export let cutoff: number = 0;
+	let clazz = '';
+	export { clazz as class };
 
 	const xTicks = data.map((d) => d.name);
 	const yTicks = [0, 25, 50, 75, 100];
@@ -27,7 +29,7 @@
 	$: barWidth = innerWidth / xTicks.length;
 </script>
 
-<div class="chart" bind:clientWidth={width} bind:clientHeight={height}>
+<div class="chart {clazz}" bind:clientWidth={width} bind:clientHeight={height}>
 	<svg>
 		<!-- y axis -->
 		<g class="axis y-axis">
@@ -50,7 +52,7 @@
 
 		<!-- x axis -->
 		<g class="axis x-axis">
-			{#each data as point, i }
+			{#each data as point, i}
 				<g class="text-xs" transform="translate({xScale(i)},{height})">
 					<text
 						stroke="none"
@@ -62,26 +64,24 @@
 						y="-15"
 						fill="#888888"
 						text-anchor="middle"
-						><tspan x={barWidth / 2 - barWidth / 8} dy="0.71em"
-							>{point.name}</tspan
-						></text
+						><tspan x={barWidth / 2 - barWidth / 8} dy="0.71em">{point.name}</tspan></text
 					>
 				</g>
 			{/each}
 		</g>
 
 		<g>
-<!--			<rect-->
-<!--					class="bg-primary-foreground"-->
-<!--					x={xScale(0)}-->
-<!--					y={yScale(100)}-->
-<!--					width={xScale(cutoff - 8)}-->
-<!--					height={yScale(0) - yScale(100)}-->
-<!--					fill="white"-->
-<!--					fill-opacity="0.1"-->
-<!--					rx="4"-->
-<!--					ry="4"-->
-<!--				/>-->
+			<!--			<rect-->
+			<!--					class="bg-primary-foreground"-->
+			<!--					x={xScale(0)}-->
+			<!--					y={yScale(100)}-->
+			<!--					width={xScale(cutoff - 8)}-->
+			<!--					height={yScale(0) - yScale(100)}-->
+			<!--					fill="white"-->
+			<!--					fill-opacity="0.1"-->
+			<!--					rx="4"-->
+			<!--					ry="4"-->
+			<!--				/>-->
 			{#each data as point, i}
 				<!--{#if i + 8 < cutoff}-->
 				<rect
@@ -96,16 +96,16 @@
 				/>
 				<!--{/if}-->
 				{#if i + 8 >= cutoff}
-				<rect
-					class="bg-primary-foreground"
-					x={xScale(i) + 2}
-					y={yScale(point.actual)}
-					width={barWidth - 8}
-					height={yScale(0) - yScale(point.actual)}
-					fill={point.actual < 75 ? '#688e26' : point.actual < 90 ? '#faa613' : '#ef4444'}
-					rx="4"
-					ry="4"
-				/>
+					<rect
+						class="bg-primary-foreground"
+						x={xScale(i) + 2}
+						y={yScale(point.actual)}
+						width={barWidth - 8}
+						height={yScale(0) - yScale(point.actual)}
+						fill={point.actual < 75 ? '#688e26' : point.actual < 90 ? '#faa613' : '#ef4444'}
+						rx="4"
+						ry="4"
+					/>
 				{/if}
 			{/each}
 		</g>
