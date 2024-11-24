@@ -6,8 +6,8 @@ function getWeedayIndex() {
     return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(new Date().toLocaleString('en-us', { weekday: 'short' }))
 }
 
-// const API_URL = "https://ml-backend-1060597826530.europe-west3.run.app";
-const API_URL = "http://192.168.178.252:8000";
+const API_URL = "https://bibradar-ml.dorian.im";
+//const API_URL = "http://192.168.178.252:8000";
 
 export const load: ServerLoad = async ({ params, fetch }) => {
     let libs: Lib[] = await fetch(API_URL + "/libraries").then(async (response) => {

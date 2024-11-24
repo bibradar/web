@@ -10,12 +10,22 @@
 
 	const { data } = $props();
 
-	let orderedLibs = $state(data.libs);
+	interface LibPrediction {
+		library_id: number;
+		score: number;
+		time?: string;
+		lib?: Lib;
+		occupancy?: number[];
+		avg?: number[];
+	}
+	let ranking: LibPrediction[] = $state([]);
 
 	let mapContainer: HTMLElement | undefined = $state();
 
 	const initMap = async () => {
 		if (!mapContainer) return;
+
+		console.log(ranking[0].lib?.location);
 
 		const { Geocoder } = (await google.maps.importLibrary(
 			'geocoding'
@@ -24,7 +34,7 @@
 		let validationPromise = new Promise<google.maps.LatLng>((resolve, reject) => {
 			new Geocoder().geocode(
 				{
-					address: orderedLibs[0].location ?? undefined
+					address: ranking[0].lib?.location ?? undefined
 				},
 				(response, status) => {
 					if (!response || status !== 'OK') {
@@ -142,6 +152,12 @@
 		});
 	};
 
+	function getWeedayIndex() {
+		return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(
+			new Date().toLocaleString('en-us', { weekday: 'short' })
+		);
+	}
+
 	const loadDistances = async () => {
 		const { Geocoder } = (await google.maps.importLibrary(
 			'geocoding'
@@ -203,36 +219,71 @@
 
 		let distances: { distance: google.maps.DirectionsLeg; lib: Lib }[] =
 			await Promise.all(promises);
-		let request = distances.map((distance) => {
-			return {
-				library_id: distance.lib.id,
-				arrival_time: distance.distance.arrival_time?.value.getTime()
-			};
-		});
+		let request = distances
+			.map((distance) => {
+				return {
+					library_id: distance.lib.id,
+					arrival_time: distance.distance.arrival_time?.value.getTime() / 1000
+				};
+			})
+			.filter((d) => d.arrival_time);
 		console.log(request);
 
-		let resp = fetch('https://ml-backend-1060597826530.europe-west3.run.app/predict', {
+		let resp = await (fetch('https://bibradar-ml.dorian.im/predictt', {
 			method: 'POST',
 			body: JSON.stringify(request),
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		}).then((response) => response.json());
+		}).then((response) => response.json()) as Promise<LibPrediction[]>);
+
+		let lib_day_prediction = await (fetch(
+			'https://bibradar-ml.dorian.im/libraries_day_prediction'
+		).then((response) => response.json()) as Promise<LibPrediction[]>);
+
+		let avgs: void | any[] = await fetch(
+			'https://bibradar-ml.dorian.im/user_count_stats/' + getWeedayIndex()
+		).then(async (response) => {
+			return await response.json();
+		});
+
+		resp = resp
+			.sort((a, b) => b.score - a.score)
+			.map((pred) => {
+				let lib = distances.find((d) => d.lib.id === pred.library_id);
+				let predicst = lib_day_prediction.find((d) => d.library_id === pred.library_id);
+				let avg = avgs[pred.library_id];
+				console.log(lib.lib.id, avg);
+				return {
+					...pred,
+					time: lib?.distance.duration?.text,
+					lib: lib?.lib,
+					occupancy: predicst?.occupancy
+						.map(function (n, i) {
+							return n / avgs[pred.library_id]['max_user_count'][i];
+						})
+						.slice(8, 24),
+					avg: avg['avg_user_count']
+						.map(function (n, i) {
+							return n / avg['max_user_count'][i];
+						})
+						.slice(8, 24)
+				};
+			});
 
 		console.log(resp);
+		ranking = resp;
 	};
 
 	onMount(loadDistances);
-
 	$effect(() => {
-		if (!mapContainer) return;
-		initMap();
+		if (ranking.length > 0 && mapContainer) {
+			initMap();
+		}
 	});
 </script>
 
-{#await orderedLibs}
-	Please wait...
-{:then libs}
+{#if ranking.length > 0 && ranking[0].lib}
 	<div class="container">
 		<div
 			class="flex flex-col flex-wrap items-center justify-center pt-10 text-center max-md:h-screen"
@@ -255,7 +306,7 @@
 						>
 					</div>
 					<div>
-						{libs[0].bib}
+						{ranking[0].lib?.bib}
 					</div>
 				</div>
 				<div class="flex flex-grow items-end justify-center p-4 md:hidden">
@@ -289,15 +340,15 @@
 			</Card.Root>
 			<Card.Root class="h-[550px] min-h-[550px] w-full min-w-[370px] flex-grow md:w-[370px]">
 				<Card.Header>
-					<CardTitle>You will arrive in 35min</CardTitle>
+					<CardTitle>You will arrive in {ranking[0].time}</CardTitle>
 					<Card.Description>hurry up, so you can catch a spot!</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex h-full items-center justify-center">
 					<Bar
-						data={[0.0, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.6, 0.5].map((o, i) => ({
-							name: (i + 8) % 3 === 0 ? i + 8 : '',
-							avg: o * 100,
-							actual: Math.min(o * 100 - (5 - Math.random() * 20), 99)
+						data={ranking[0].occupancy?.map((o, i) => ({
+							name: (i + 8) % 3 === 0 ? i + 5 : '',
+							avg: ranking[0].avg[i] * 100,
+							actual: o * 100
 						}))}
 						cutoff={13}
 					/>
@@ -309,6 +360,6 @@
 			<Button href="/">Go back to overview</Button>
 		</div>
 	</div>
-{:catch error}
-	<p>{error.message}</p>
-{/await}
+{:else}
+	<div>loading...</div>
+{/if}
