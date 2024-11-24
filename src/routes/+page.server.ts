@@ -12,7 +12,7 @@ const API_URL = "https://bibradar-ml.dorian.im";
 export const load: ServerLoad = async ({ params, fetch }) => {
     let libs: Lib[] = await fetch(API_URL + "/libraries").then(async (response) => {
         console.log(response);
-        let libs: Lib[] =  await response.json();
+        let libs: Lib[] =  (await response.json()).sort((a, b) => a.id - b.id);
 
 
         let avgs: void | any[] = await fetch(API_URL + "/user_count_stats/" + getWeedayIndex() ).then(async (response) => {
@@ -34,37 +34,33 @@ export const load: ServerLoad = async ({ params, fetch }) => {
         }
 
         libs.forEach((lib) => {
-            lib.averages = new Promise((resolve, reject) => {
-                setTimeout(() => {
                     if (!avgs[lib.id]) {
                         console.error("No average occupations found for library " + lib.id);
-                        resolve([]);
-                        return;
+                        lib.averages = [];
+                    } else {
+                    let max_max_user_count = Math.max(...avgs[lib.id]["max_user_count"]);
+                    lib.averages = avgs[lib.id]["avg_user_count"].map(function(n, i) { return n / max_max_user_count; }).slice(8, 24)
                     }
-                    resolve(avgs[lib.id]["avg_user_count"].map(function(n, i) { return n / avgs[lib.id]["max_user_count"][i]; }).slice(8, 24))
-                }, 1)
-            })
-            lib.occupations = new Promise((resolve, reject) => {
-                setTimeout(() => {
+            
                     if (!day_pred[lib.id]) {
                         console.error("No average occupations found for library " + lib.id);
-                        resolve([]);
-                        return;
-                    }
+                        lib.occupations = [];
+                    }else {
 
                     let lib_pred = day_pred.find((pred) => pred.library_id === lib.id);
 
                     if (!lib_pred) {
                         console.error("No predictions found for library " + lib.id);
-                        resolve([]);
-                        return;
+                        lib.occupations = [];
+                    } else {
+                    let max_max_user_count = Math.max(...avgs[lib.id]["max_user_count"]);
+                    lib.occupations = lib_pred.occupancy.map(function(n, i) { return n / max_max_user_count; }).slice(8, 24);
                     }
-                    resolve(lib_pred.occupancy.map(function(n, i) { return n / avgs[lib.id]["max_user_count"][i]; }).slice(8, 24))
-                }, 1)
-            });
+                }
+            
         });
 
-        return libs;
+        return libs.filter((lib) => lib.averages.length > 0 && lib.occupations.length > 0);
     });
     return {
         libs,

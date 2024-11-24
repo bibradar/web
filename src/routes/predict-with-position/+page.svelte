@@ -253,6 +253,7 @@
 				let lib = distances.find((d) => d.lib.id === pred.library_id);
 				let predicst = lib_day_prediction.find((d) => d.library_id === pred.library_id);
 				let avg = avgs[pred.library_id];
+				let max_max_user_count = Math.max(...avg['max_user_count']);
 				console.log(lib.lib.id, avg);
 				return {
 					...pred,
@@ -260,12 +261,12 @@
 					lib: lib?.lib,
 					occupancy: predicst?.occupancy
 						.map(function (n, i) {
-							return n / avgs[pred.library_id]['max_user_count'][i];
+							return n / max_max_user_count;
 						})
 						.slice(8, 24),
 					avg: avg['avg_user_count']
 						.map(function (n, i) {
-							return n / avg['max_user_count'][i];
+							return n / max_max_user_count;
 						})
 						.slice(8, 24)
 				};

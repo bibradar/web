@@ -132,15 +132,14 @@
 					</div>
 				</Card.Header>
 				<Card.Content>
-					{#await lib.occupations}
-						loading
-					{:then occupation}
-						{#await lib.averages}
-							loading
-						{:then averages}
-							<Bar data={occupation.map((o, i) => ({ name: (((i+8) % 3 === 0) ? i+5 : '' ), avg: averages[i] * 100, actual : o * 100 }))} cutoff={13} />
-						{/await}
-					{/await}
+					<Bar
+						data={lib.occupations.map((o, i) => ({
+							name: (i + 8) % 3 === 0 ? i + 5 : '',
+							avg: lib.averages[i] * 100,
+							actual: o * 100
+						}))}
+						cutoff={13}
+					/>
 				</Card.Content>
 			</Card.Root>
 		{/each}

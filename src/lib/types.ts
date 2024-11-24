@@ -4,8 +4,8 @@ export interface Lib {
     bib: string,
     uni: string,
     location: string,
-    averages: Promise<number[]>,
-    occupations: Promise<number[]>
+    averages: number[],
+    occupations: number[]
 }
 
 export interface LibDayPrediction {
