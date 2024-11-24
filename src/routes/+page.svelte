@@ -125,7 +125,11 @@
 		{#each data.libs as lib}
 			<Card.Root class="h-[550px] min-h-[550px] w-[370px] min-w-[370px] flex-grow">
 				<Card.Header class="flex flex-row items-center justify-start gap-2 pb-2">
-					<div class="mt-2 h-10 min-h-10 w-2 min-w-2 rounded bg-red-500"></div>
+					<div
+						class="mt-2 h-10 min-h-10 w-2 min-w-2 rounded {(lib.occupations.find((o) => o > 0.8) &&
+							'bg-red-500') ||
+							'bg-green-500'}"
+					></div>
 					<div class="flex flex-col">
 						<Card.Title>{lib.bib}</Card.Title>
 						<Card.Description>{lib.location}</Card.Description>

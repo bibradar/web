@@ -60,7 +60,7 @@ export const load: ServerLoad = async ({ params, fetch }) => {
             
         });
 
-        return libs.filter((lib) => lib.averages.length > 0 && lib.occupations.length > 0);
+        return libs;
     });
     return {
         libs,

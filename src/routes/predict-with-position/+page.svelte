@@ -229,7 +229,7 @@
 			.filter((d) => d.arrival_time);
 		console.log(request);
 
-		let resp = await (fetch('https://bibradar-ml.dorian.im/predictt', {
+		let resp = await (fetch('https://api.bibradar.de/predictt', {
 			method: 'POST',
 			body: JSON.stringify(request),
 			headers: {
