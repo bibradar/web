@@ -128,7 +128,7 @@
 					<div
 						class="mt-2 h-10 min-h-10 w-2 min-w-2 rounded {(lib.occupations.find((o) => o > 0.8) &&
 							'bg-red-500') ||
-							'bg-green-500'}"
+							'bg-[#688e26]'}"
 					></div>
 					<div class="flex flex-col">
 						<Card.Title>{lib.bib}</Card.Title>
