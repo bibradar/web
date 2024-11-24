@@ -351,7 +351,7 @@
 							avg: ranking[0].avg[i] * 100,
 							actual: o * 100
 						}))}
-						cutoff={13}
+						cutoff={new Date().getHours() + 4}
 					/>
 				</Card.Content>
 			</Card.Root>
