@@ -282,6 +282,21 @@
 			initMap();
 		}
 	});
+
+	let loading_texts = ["getting current occupation...", "updating the prediction...", "finding the best route...", "calculating the best library..."];
+	let current_loading_text = $state(loading_texts[0]);
+	let loading_index = 0;
+
+	const updateLoadingText = () => {
+		if (loading_index >= loading_texts.length) {
+			return;
+		}
+
+		loading_index = (loading_index + 1);
+		current_loading_text = loading_texts[loading_index];
+	};
+
+	setInterval(updateLoadingText, 1000);
 </script>
 
 {#if ranking.length > 0 && ranking[0].lib}
@@ -362,5 +377,9 @@
 		</div>
 	</div>
 {:else}
-	<div>loading...</div>
+<div class="flex items-center justify-center h-screen w-full">
+	<div class="text-2xl text-center font-bold">
+		{current_loading_text}
+	</div>
+</div>
 {/if}
