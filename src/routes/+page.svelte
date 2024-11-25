@@ -90,62 +90,72 @@
 			</div>
 			<!--	Centerd text under the logo-->
 			<div class="text-center">... find the nearest free library spot!</div>
-
-			<div class="flex w-full flex-col flex-wrap justify-center gap-4 py-8">
-				<Input bind:ref={searchInput} placeholder="Where are you right now?" class="flex-grow" />
-				<Button
-					class="flex-grow"
-					disabled={!selectedPosition}
-					href={`/predict-with-position?user-position=${selectedPosition}`}
+			{#if data.libs.length > 0}
+				<div class="flex w-full flex-col flex-wrap justify-center gap-4 py-8">
+					<Input bind:ref={searchInput} placeholder="Where are you right now?" class="flex-grow" />
+					<Button
+						class="flex-grow"
+						disabled={!selectedPosition}
+						href={`/predict-with-position?user-position=${selectedPosition}`}
 					>Let's study!
-				</Button>
-			</div>
-			<div class="flex flex-grow items-end justify-center p-4 md:hidden">
-				<!--	Arrow down icon-->
-				<svg
-					width="50px"
-					height="50px"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M12 4V20M12 20L8 16M12 20L16 16"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</div>
+					</Button>
+				</div>
+				<div class="flex flex-grow items-end justify-center p-4 md:hidden">
+					<!--	Arrow down icon-->
+					<svg
+						width="50px"
+						height="50px"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M12 4V20M12 20L8 16M12 20L16 16"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</div>
+			{:else}
+				<div class="flex flex-grow items-center justify-center p-10">
+					<div class="text-2xl text-center font-bold">
+						We are currently experiencing technical difficulties. <br>
+						The website should soon be back up and running.
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 
-	<div class="flex flex-row flex-wrap items-start justify-between gap-4">
-		{#each data.libs as lib}
-			<Card.Root class="h-[550px] min-h-[550px] w-[370px] min-w-[370px] flex-grow">
-				<Card.Header class="flex flex-row items-center justify-start gap-2 pb-2">
-					<div
-						class="mt-2 h-10 min-h-10 w-2 min-w-2 rounded {(lib.occupations.find((o) => o > 0.8) &&
+	{#if data.libs.length > 0}
+		<div class="flex flex-row flex-wrap items-start justify-between gap-4">
+			{#each data.libs as lib}
+				<Card.Root class="h-[550px] min-h-[550px] w-[370px] min-w-[370px] flex-grow">
+					<Card.Header class="flex flex-row items-center justify-start gap-2 pb-2">
+						<div
+							class="mt-2 h-10 min-h-10 w-2 min-w-2 rounded {(lib.occupations.find((o) => o > 0.8) &&
 							'bg-red-500') ||
 							'bg-[#688e26]'}"
-					></div>
-					<div class="flex flex-col">
-						<Card.Title>{lib.bib}</Card.Title>
-						<Card.Description>{lib.location}</Card.Description>
-					</div>
-				</Card.Header>
-				<Card.Content>
-					<Bar
-						data={lib.occupations.map((o, i) => ({
+						></div>
+						<div class="flex flex-col">
+							<Card.Title>{lib.bib}</Card.Title>
+							<Card.Description>{lib.location}</Card.Description>
+						</div>
+					</Card.Header>
+					<Card.Content>
+						<Bar
+							data={lib.occupations.map((o, i) => ({
 							name: (i + 8) % 3 === 0 ? i + 5 : '',
 							avg: lib.averages[i] * 100,
 							actual: o * 100
 						}))}
-						cutoff={new Date().getHours() + 4}
-					/>
-				</Card.Content>
-			</Card.Root>
-		{/each}
-	</div>
+							cutoff={new Date().getHours() + 4}
+						/>
+					</Card.Content>
+				</Card.Root>
+			{/each}
+		</div>
+	{/if}
 </div>

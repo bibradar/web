@@ -12,6 +12,11 @@ const API_URL = "https://bibradar-ml.dorian.im";
 export const load: ServerLoad = async ({ params, fetch }) => {
     let libs: Lib[] = await fetch(API_URL + "/libraries").then(async (response) => {
         console.log(response);
+
+        if (response.status != 200) {
+          return [];
+        }
+
         let libs: Lib[] =  (await response.json()).sort((a, b) => a.id - b.id);
 
 
